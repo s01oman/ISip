@@ -70,7 +70,7 @@ class ISipInterface():
     	self.esp_seq+=1
 
     def get_pkt(self):
-   		pkt=Dot11(type=8)/self.ipv6/self.esp
+   		pkt=Dot1Q()/self.ipv6/self.esp
    		return pkt
    
     def set_content(self):
