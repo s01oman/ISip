@@ -70,7 +70,7 @@ class ISipInterface():
     	self.esp_seq+=1
 
     def get_pkt(self):
-   		pkt=self.ipv6/self.esp
+   		pkt=Dot11(type=8)/self.ipv6/self.esp
    		return pkt
    
     def set_content(self):
@@ -96,7 +96,7 @@ class ISipInterface():
     			pkt=self.get_pkt()
                 #print(raw(pkt))
     			pkt.show()
-    			send(pkt,iface='rmnet_data1')
+    			sendp(pkt,iface='rmnet_data1')
     	return
 
     def set_invite(self,src_ims='he.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8613849194907',max_for=70,dst_ims='he.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='+8618132605076',spi_c='3027309194',spi_s='3413185162',s_cell_id='46011190419b3b02'):
