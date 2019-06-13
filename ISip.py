@@ -70,7 +70,7 @@ class ISipInterface():
     	self.esp_seq+=1
 
     def get_pkt(self):
-   		pkt=CookedLinux()/Dot1AD()/self.ipv6/self.esp
+   		pkt=self.ipv6/self.esp
    		return pkt
    
     def set_content(self):
@@ -99,7 +99,7 @@ class ISipInterface():
     			sendp(pkt,iface='rmnet_data1')
     	return
 
-    def set_invite(self,src_ims='he.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8613849194907',max_for=70,dst_ims='he.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='+8618132605076',spi_c='3027309194',spi_s='3413185162',s_cell_id='46011190419b3b02'):
+    def set_invite(self,src_ims='ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8613849194907',max_for=70,dst_ims='ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='+8618132605076',spi_c='3027309194',spi_s='3413185162',s_cell_id='46011190419b3b02'):
         """
         """
         self.set_content()
@@ -152,9 +152,9 @@ class ISipInterface():
   	
   		
 if __name__ == '__main__':
-	key='a0e61dfc937db91838a0d4243b155882'
-	spi=0xc44846a2
-	ack=0x8d9ef030
-	test_invite=ISipInterface(source_ip='240e:66:1001:c2ca:1:2:b28c:106b',target_ip='204e:66:1000::18',source_port=6201,target_port=9900,key=key,spi=spi,ack=ack)
-	test_invite.set_invite(src_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310733810',max_for=70,dst_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='+8613849194907',spi_c=0x00018145,spi_s=spi,s_cell_id='46011190419b3b01')
+	key='bc74318fa00976550249b4d039fed9a4'
+	spi=0xcaa68568
+	ack=0x45514d55
+	test_invite=ISipInterface(source_ip='240e:66:1001:31b8:1:1:c3c1:6a66',target_ip='204e:66:1000::8',source_port=6201,target_port=9900,key=key,spi=spi,ack=ack)
+	test_invite.set_invite(src_ims='ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310733810',max_for=70,dst_ims='ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='+8613849194907',spi_c=0x00018145,spi_s=spi,s_cell_id='46011190419b3b01')
 	test_invite.send_pkt()
