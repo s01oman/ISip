@@ -42,7 +42,7 @@ class ISipInterface():
         self.msg_type = msg_type
         self.message = ISipRequestMessage() if msg_type.lower() == "request" else ISipResponseMessage()
         self.content=''
-        self.ipv6 =inet6.IPv6(dst=target_ip,src=source_ip)if source_ip and target_ip else inet6.IPv6()
+        self.ipv6 =inet6.IPv6(dst=target_ip,src=source_ip,nh=0x32)if source_ip and target_ip else inet6.IPv6()
         self.tcp=inet.TCP(sport=source_port,dport=target_port,ack=ack,chksum=0) if source_port and target_port  else inet.TCP()
         self.esp=ipsec._ESPPlain(spi=spi,nh=0x06,padding='\x01\x02',padlen=2)
         self.key=key
@@ -68,7 +68,8 @@ class ISipInterface():
         self.esp_seq+=1
 
     def get_pkt(self):
-   		pkt=self.ipv6/self.esp
+   		#pkt=Ether()/self.ipv6/self.esp
+        pkt=self.ipv6/self.esp
    		return pkt
    
     def set_content(self):
