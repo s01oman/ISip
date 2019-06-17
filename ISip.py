@@ -68,7 +68,7 @@ class ISipInterface():
         self.esp_seq+=1
 
     def get_pkt(self):
-   		pkt=self.ipv6/self.esp
+   		pkt=Ether()/self.ipv6/self.esp
    		return pkt
    
     def set_content(self):
@@ -95,7 +95,7 @@ class ISipInterface():
                 #print(type(pkt))
                 pkt.show()
                 #print(binascii.b2a_hex(raw(pkt['IPv6'])))
-                sendp(pkt,iface='rmnet_data1')
+                send(pkt,iface='rmnet_data1')
                 #sendp(pkt)
         return
 
