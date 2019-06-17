@@ -46,7 +46,7 @@ class ISipInterface():
         self.tcp=inet.TCP(sport=source_port,dport=target_port,ack=ack,chksum=0) if source_port and target_port  else inet.TCP()
         self.esp=ipsec._ESPPlain(spi=spi,nh=0x06,padding='\x01\x02',padlen=2)
         self.key=key
-        self.esp_seq=10
+        self.esp_seq=21
         self.tcp_seq=seq
     def set_pkt(self,tcp_pl='',fin=0):
         msg=struct.pack('>I',self.esp.spi)+struct.pack('>I',self.esp.seq)+raw(self.tcp)+self.esp.padding+struct.pack('B',self.esp.padlen)+struct.pack('B',self.esp.nh)
@@ -55,7 +55,7 @@ class ISipInterface():
             self.tcp.setfieldval('flags',0x18)
             self.tcp.setfieldval('seq',self.tcp_seq)
         else:
-            self.tcp.setfieldval('options',[('NOP',0x01),('NOP',0x01),('Timestamp',(87790,6715466))])
+            self.tcp.setfieldval('options',[('NOP',0x01),('NOP',0x01),('Timestamp',(269770,6719104))])
             self.tcp.setfieldval('flags',0x010)
             self.tcp.setfieldval('seq',self.tcp_seq)
             self.tcp_seq+=1288
@@ -95,7 +95,7 @@ class ISipInterface():
                 #print(type(pkt))
                 pkt.show()
                 #print(binascii.b2a_hex(raw(pkt['IPv6'])))
-                send(pkt,iface='rmnet_data1')
+                sendp(pkt,iface='rmnet_data1')
                 #sendp(pkt)
         return
 
@@ -155,7 +155,7 @@ class ISipInterface():
 if __name__ == '__main__':
 	key='ce64413e8392b944666e137e7ef37dd2'
 	spi=0xcadf3815
-	ack=0xbd7fcb15
-	test_invite=ISipInterface(source_ip='240e:66:1001:897c:1:2:cef3:cfc',target_ip='204e:66:1000::18',source_port=7401,target_port=9900,key=key,spi=spi,ack=ack)
+	ack=0xbd7fd61e
+	test_invite=ISipInterface(source_ip='240e:66:1001:897c:1:2:cef3:cfc',target_ip='204e:66:1000::18',source_port=6401,target_port=9900,key=key,spi=spi,ack=ack)
 	test_invite.set_invite(src_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310733810',max_for=70,dst_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='13849194907')
 	test_invite.send_pkt()
