@@ -46,7 +46,7 @@ class ISipInterface():
         self.tcp=inet.TCP(sport=source_port,dport=target_port,ack=ack,chksum=0) if source_port and target_port  else inet.TCP()
         self.esp=ipsec._ESPPlain(spi=spi,nh=0x06,padding='\x01\x02',padlen=2)
         self.key=key
-        self.esp_seq=21
+        self.esp_seq=10
         self.tcp_seq=seq
     def set_pkt(self,tcp_pl='',fin=0):
         msg=struct.pack('>I',self.esp.spi)+struct.pack('>I',self.esp.seq)+raw(self.tcp)+self.esp.padding+struct.pack('B',self.esp.padlen)+struct.pack('B',self.esp.nh)
@@ -55,21 +55,27 @@ class ISipInterface():
             self.tcp.setfieldval('flags',0x18)
             self.tcp.setfieldval('seq',self.tcp_seq)
         else:
-            self.tcp.setfieldval('options',[('NOP',0x01),('NOP',0x01),('Timestamp',(269770,6719104))])
+            self.tcp.setfieldval('options',[('NOP',0x01),('NOP',0x01),('Timestamp',(429460160,31726820))])
             self.tcp.setfieldval('flags',0x010)
             self.tcp.setfieldval('seq',self.tcp_seq)
             self.tcp_seq+=1288
-        self.tcp.setfieldval('chksum',checksum(raw(self.tcp)))
+
+        self.tcp.setfieldval('chksum',0)
         esp_tcp=self.tcp/tcp_pl
-        type(msghash.hexdigest()[:24])
+        chksum_p=raw(self.ipv6)[8:24]+raw(self.ipv6)[24:40]+binascii.a2b_hex('0006')+struct.pack('>H',len(raw(esp_tcp)))+raw(esp_tcp)
+        
+        print(checksum(chksum_p))
+        self.tcp.setfieldval('chksum',checksum(chksum_p))
+        esp_tcp=self.tcp/tcp_pl
+        #type(msghash.hexdigest()[:24])
         self.esp.setfieldval('icv',binascii.a2b_hex(msghash.hexdigest()[:24]))
         self.esp.setfieldval('seq',self.esp_seq)
         self.esp.setfieldval('data',esp_tcp)
         self.esp_seq+=1
 
     def get_pkt(self):
-        #pkt=Ether()/self.ipv6/self.esp
         pkt=self.ipv6/self.esp
+        #pkt=self.ipv6/self.esp
         return pkt
    
     def set_content(self):
@@ -96,42 +102,27 @@ class ISipInterface():
                 #print(type(pkt))
                 pkt.show()
                 #print(binascii.b2a_hex(raw(pkt['IPv6'])))
-                sendp(pkt,iface='rmnet_data1')
-                #sendp(pkt)
+                #sendp(pkt,iface='rmnet_data1')
+                sendp(pkt)
         return
 
     def set_invite(self,src_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310022036',max_for=70,dst_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='13849194907',spi_c=0xb5df3815,spi_s=0xcadf3815,s_cell_id='46011190419b3b02'):
         """
         """
         self.set_content()
-        self.message.uri = 'sip:{0};phone-context={1}@{2};user=phone'.format(dst_imsisdn,
-							        										 dst_ims,
-							        										 dst_ims)
+        self.message.uri = 'sip:{0};phone-context={1}@{2};user=phone'.format(dst_imsisdn,dst_ims,dst_ims)
         self.message.method = 'INVITE'
         self.message.headers = {
-        	'Via': 'SIP/2.0/TCP [{0}]:{1};branch={2};rport;transport=TCP'.format(self.ipv6.src,
-                                                                 				  self.tcp.sport-1,
-                                                                                  'z9hG4bK-524287-1---8f093ae30f940325'),
+        	'Via': 'SIP/2.0/TCP [{0}]:{1};branch={2};rport;transport=TCP'.format(self.ipv6.src,self.tcp.sport-1,'z9hG4bK-524287-1---8f093ae30f940325'),
         	'Max-Forwards':'{0}'.format(max_for),
-        	'RTRTR':'<sip:[{0}]:{1};lr>'.format(self.ipv6.dst,
-        										 self.tcp.dport),
+        	'RTRTR':'<sip:[{0}]:{1};lr>'.format(self.ipv6.dst,self.tcp.dport),
             'Route':'<sip:orig@{0};lr;ca=5048;TYPE=V4;IP=5.2.0.89;PORT=5060;TRC=ffffffff-ffffffff;Dpt=77d6-2>'.format('scscf14ahw.bj.bj.bj.ims.mnc011.mcc460.3gppnetwork.org'),
         	'Proxy-Require': 'sec-agree',
 			'Require': 'sec-agree',
-			'Contact': '<sip:{0}@[{1}]:{2}>;+sip.instance="<urn:gsma:imei:{3}>";+g.3gpp.icsi-ref="urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel";video'.format(src_imisdn,
-				self.ipv6.src,
-				self.tcp.sport-1,
-                '35958307-812346-0'
-				),
-			'To': '<sip:{0};phone-context={1}@{2};user=phone>'.format(dst_imsisdn,
-            							 dst_ims,
-                                         dst_ims),
-			'From': '<sip:{0}@{1}>;tag={2}'.format(src_imisdn,
-            									   src_ims,
-            									   '888db213'),
-            'Call-ID': '{0}@{1}'.format('HZxPohcUNfKcylwfU7YNZQ..',
-            							self.ipv6.src),
-
+			'Contact': '<sip:{0}@[{1}]:{2}>;+sip.instance="<urn:gsma:imei:{3}>";+g.3gpp.icsi-ref="urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel";video'.format(src_imisdn,self.ipv6.src,self.tcp.sport-1,'35958307-812346-0'),
+			'To': '<sip:{0};phone-context={1}@{2};user=phone>'.format(dst_imsisdn,dst_ims,dst_ims),
+			'From': '<sip:{0}@{1}>;tag={2}'.format(src_imisdn,src_ims,'888db213'),
+            'Call-ID': '{0}@{1}'.format('HZxPohcUNfKcylwfU7YNZQ..',self.ipv6.src),
             'CSeq': '1 INVITE',
             'Session-Expires': 1800,
             'Min-SE': 1800,
@@ -140,12 +131,8 @@ class ISipInterface():
            	'Content-Type': 'application/sdp',
            	'Supported': 'timer, 100rel, precondition, gruu, sec-agree',
             'User-Agent': '{0}'.format('SM-G9550-G9550ZCS4CSB3 Samsung IMS 6.0'),
-           	'Security-Verify': 'ipsec-3gpp;alg=hmac-md5-96;prot=esp;mod=trans;ealg=null;spi-c={0};spi-s={1};port-c={2};port-s={3}'.format(spi_c,
-           																																  spi_s,
-           																																  9950,
-           																																  self.tcp.dport),
-           	'P-Preferred-Identity': '<sip:{0}@{1}>'.format(src_imisdn,
-           													 src_ims),
+           	'Security-Verify': 'ipsec-3gpp;alg=hmac-md5-96;prot=esp;mod=trans;ealg=null;spi-c={0};spi-s={1};port-c={2};port-s={3}'.format(spi_c,spi_s,9950,self.tcp.dport),
+           	'P-Preferred-Identity': '<sip:{0}@{1}>'.format(src_imisdn,src_ims),
            	'Accept-Contact': '*;+g.3gpp.icsi-ref="urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel"',
             'Content-Length': '0',
             'P-Early-Media': 'supported',
@@ -154,9 +141,9 @@ class ISipInterface():
             'Content-Length': len(self.content),
             }
 if __name__ == '__main__':
-	key='ce64413e8392b944666e137e7ef37dd2'
-	spi=0xcadf3815
-	ack=0xbd7fd61e
-	test_invite=ISipInterface(source_ip='240e:66:1001:897c:1:2:cef3:cfc',target_ip='204e:66:1000::18',source_port=6401,target_port=9900,key=key,spi=spi,ack=ack)
-	test_invite.set_invite(src_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310733810',max_for=70,dst_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='13849194907')
+	key='94f123234a7834e6452f1000f31e9215'
+	spi=0xd9e7c7d3
+	ack=0x4b709675
+	test_invite=ISipInterface(source_ip='2409:8800:8634:46df:1:2:e384:c702',target_ip='2409:8010:9410:1:1007:1007::',source_port=6201,target_port=9900,key=key,spi=spi,ack=ack)
+	test_invite.set_invite(src_ims='ims.mnc000.mcc460.3gppnetwork.org',src_imisdn='+8613849194907',max_for=70,dst_ims='ims.mnc000.mcc460.3gppnetwork.org',dst_imsisdn='17310733810')
 	test_invite.send_pkt()
