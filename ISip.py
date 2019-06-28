@@ -102,8 +102,8 @@ class ISipInterface():
                 #print(type(pkt))
                 pkt.show()
                 #print(binascii.b2a_hex(raw(pkt['IPv6'])))
-                #sendp(pkt,iface='rmnet_data1')
-                sendp(pkt)
+                sendp(pkt,iface='rmnet_data1')
+                #sendp(pkt)
         return
 
     def set_invite(self,src_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',src_imisdn='+8617310022036',max_for=70,dst_ims='bj.ims.mnc011.mcc460.3gppnetwork.org',dst_imsisdn='13849194907',spi_c=0xb5df3815,spi_s=0xcadf3815,s_cell_id='46011190419b3b02'):
