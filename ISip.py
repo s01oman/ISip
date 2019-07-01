@@ -54,7 +54,7 @@ class ISipInterface():
     def send_pkt(self):
         pkt=self.create_pkt()
         pkt.show()
-        ans =sr1(pkt,verbose=False,iface='rmnet_data1')
+        ans =sr(pkt,verbose=False,iface='rmnet_data1')
 def test_tcp():
     res=sr(IPv6(dst="2409:8000:2806:2210::")/TCP(dport=80,sport=17666,flags='S'),verbose=False)
     result=res[0].res
@@ -63,7 +63,7 @@ def test_tcp():
 if __name__ == '__main__':
     spi=0xfca8a585
     key="66c13e1420147ed4f265db17e44a66e9"
-    test_invite=ISipInterface(source_ip='2409:8100:523:b12d:2:2:db01:fd9e',target_ip='2409:8010:9410:1:1007:1007::',source_port=6201,target_port=9900,spi=spi,key=key)
+    test_invite=ISipInterface(target_ip='2409:8010:9410:1:1007:1007::',source_port=6201,target_port=9900,spi=spi,key=key)
     res=test_invite.send_pkt()
     print(res)
     #test_tcp()
