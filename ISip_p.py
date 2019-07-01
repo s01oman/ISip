@@ -54,7 +54,7 @@ class ISipInterface():
     def send_pkt(self):
         pkt=self.create_pkt()
         pkt.show()
-        ans =sr1(pkt,verbose=False,iface='rmnet_data1')
+        ans =sendp(pkt,verbose=False,iface='rmnet_data1')
 def test_tcp():
     res=sr(IPv6(dst="2409:8000:2806:2210::")/TCP(dport=80,sport=17666,flags='S'),verbose=False)
     result=res[0].res
